@@ -8,14 +8,13 @@ package data;
 public final class StationID {
     // L'identificador de l'estació, ha de complir amb certs criteris.
     private final String id;
-    public final GeographicPoint ubicacio;
 
     /**
      * Constructor de StationID.
      * @param id L'identificador per a l'estació. No pot ser nul ni buit i ha de complir un format vàlid.
      * @throws IllegalArgumentException si l'identificador no és vàlid.
      */
-    public StationID(String id, GeographicPoint ubicacio) {
+    public StationID(String id) {
         // Validació: L'ID no pot ser nul ni estar buit.
         if (id == null || id.trim().isEmpty()) { //Trim elimina els espais
             throw new IllegalArgumentException("L'ID de l'estació no pot ser nul o buit.");
@@ -24,12 +23,8 @@ public final class StationID {
         if (!id.matches("[A-Z0-9_-]{5,20}")) {
             throw new IllegalArgumentException("L'ID de l'estació ha de tenir entre 5 i 20 caràcters alfanumèrics, guions o guions baixos.");
         }
-        if (ubicacio == null) {
-            throw new IllegalArgumentException("La ubicació no pot ser nul·la.");
-        }
         // Si passa totes les validacions, assignem l'ID.
         this.id = id;
-        this.ubicacio = ubicacio;
     }
 
     /**
@@ -59,10 +54,7 @@ public final class StationID {
      */
     @Override
     public int hashCode() {
-        final int prime = 31; // Número primer usat per a la generació del hash.
-        int result = 1;
-        result = prime * result + id.hashCode(); // cridem al métode hashCode per obtenir el hash de l'ID
-        return result;
+        return id.hashCode(); //Funció simplificada
     }
 
     /**
@@ -72,9 +64,5 @@ public final class StationID {
     @Override
     public String toString() {
         return "StationID{" + "id='" + id + '\'' + '}';
-    }
-
-    public GeographicPoint getUbicacio(){
-        return ubicacio;
     }
 }

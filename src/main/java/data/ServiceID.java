@@ -33,11 +33,15 @@ public final class ServiceID {
 
     @Override
     public boolean equals(Object obj) {
-        // Comprova si aquest objecte és igual a un altre basant-se en l'atribut 'id'.
-        if (this == obj) return true; // Si són el mateix objecte, són iguals.
-        if (obj == null || getClass() != obj.getClass()) return false; // Si l'altre objecte és d'una classe diferent, no són iguals.
+        boolean eq;
+        if (this == obj){
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
         ServiceID serviceID = (ServiceID) obj;
-        return id.equals(serviceID.id); // Compara els valors dels IDs.
+        return id.equals(serviceID.id);
     }
 
     @Override

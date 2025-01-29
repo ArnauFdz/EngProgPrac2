@@ -12,22 +12,17 @@ public class WalletPayment extends Payment {
     /**
      * Moneder associat al pagament.
      */
-    private Wallet wallet;
+    private final Wallet wallet;
 
     /**
      * Constructor de WalletPayment.
      *
      * @param service Servei associat al pagament.
-     * @param user Usuari que realitza el pagament.
-     * @param wallet Moneder associat.
      * @param amount Import del pagament.
      */
-    public WalletPayment(JourneyService service, UserAccount user, Wallet wallet, BigDecimal amount) {
-        super(service, user, amount);
-        if (wallet == null) {
-            throw new IllegalArgumentException("El moneder no pot ser nul.");
-        }
-        this.wallet = wallet;
+    public WalletPayment(JourneyService service, BigDecimal amount) {
+        super(service, amount);
+        this.wallet = service.getUser().getWallet();// En comptes d'entrar l'usuari i la wallet per paràmetres la podem aconseguir a través de service.
     }
 
     /**
@@ -76,5 +71,10 @@ public class WalletPayment extends Payment {
     @Override
     public void executePayment() throws NotEnoughWalletException {
         deductAmount(getAmount());
+    }
+
+    @Override
+    public BigDecimal getAmount() {
+        return super.getAmount();
     }
 }

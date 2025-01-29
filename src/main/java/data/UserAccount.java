@@ -1,6 +1,8 @@
 // Fitxer: UserAccount.java
 package data;
 
+import micromobility.payment.Wallet;
+
 /**
  * Classe UserAccount representa un identificador únic per a un compte d'usuari.
  * Aquesta classe és immutable i assegura que cada compte tingui un nom d'usuari vàlid.
@@ -8,6 +10,7 @@ package data;
 public final class UserAccount {
     // El nom d'usuari associat al compte, ha de ser únic i complir amb certs criteris.
     private final String username;
+    private Wallet wallet;
 
     /**
      * Constructor de UserAccount.
@@ -35,6 +38,14 @@ public final class UserAccount {
         return username;
     }
 
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
+    }
+
     /**
      * Compara aquesta instància de UserAccount amb un altre objecte.
      * @param o L'objecte a comparar.
@@ -54,10 +65,7 @@ public final class UserAccount {
      */
     @Override
     public int hashCode() {
-        final int prime = 31; // Número primer utilitzat per a la generació del hash.
-        int result = 1;
-        result = prime * result + username.hashCode(); // Calcula el hash basat en el nom d'usuari.
-        return result;
+        return username.hashCode();
     }
 
     /**

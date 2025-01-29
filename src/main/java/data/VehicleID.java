@@ -54,10 +54,7 @@ public final class VehicleID {
      */
     @Override
     public int hashCode() {
-        final int prime = 31; // Número primer utilitzat per a la generació del hash.
-        int result = 1;
-        result = prime * result + id.hashCode(); // Calcula el hash basat en l'ID.
-        return result;
+        return id.hashCode();
     }
 
     /**
