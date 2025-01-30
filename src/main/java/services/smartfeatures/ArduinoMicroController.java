@@ -2,6 +2,7 @@ package services.smartfeatures;
 
 import exceptions.PMVPhisicalException;
 import exceptions.ProceduralException;
+import micromobility.JourneyRealizeHandler;
 
 import java.net.ConnectException;
 
@@ -14,7 +15,7 @@ import java.net.ConnectException;
  * - Provada a `ArduinoMicroControllerTest` per comprovar el comportament en escenaris operatius i d'errors.
  */
 public interface ArduinoMicroController { // Software for microcontrollers
-    public void setBTconnection () throws ConnectException, ConnectException;
+    public void setBTconnection (JourneyRealizeHandler handler) throws ConnectException, ConnectException;
     public void startDriving () throws PMVPhisicalException, ConnectException,
             ProceduralException;
     public void stopDriving () throws PMVPhisicalException, ConnectException,

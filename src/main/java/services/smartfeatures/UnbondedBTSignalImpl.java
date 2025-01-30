@@ -12,10 +12,12 @@ public class UnbondedBTSignalImpl implements UnbondedBTSignal {
 
     private final String stationID; // ID de l'estació a transmetre
     private final int broadcastInterval; // Interval en segons entre emissions
+    private JourneyRealizeHandler handler;
 
-    public UnbondedBTSignalImpl(String stationID, int broadcastInterval) {
+    public UnbondedBTSignalImpl(String stationID, int broadcastInterval, JourneyRealizeHandler handler) {
         this.stationID = stationID;
         this.broadcastInterval = broadcastInterval;
+        this.handler = handler;
     }
 
     @Override
@@ -23,6 +25,7 @@ public class UnbondedBTSignalImpl implements UnbondedBTSignal {
         try {
 
             while (true) {
+                handler.broadcastStationID(stationID); //Error que es solucionara a posteriori en els canvis de JourneyRealizeHandler
                 TimeUnit.SECONDS.sleep(broadcastInterval); // Pausa entre emissions
             }
         } catch (InterruptedException e) {
@@ -32,7 +35,4 @@ public class UnbondedBTSignalImpl implements UnbondedBTSignal {
             throw new ConnectException("Error inesperat en la connexió Bluetooth.");
         }
     }
-
-    // Mètode auxiliar per crear una instància del JourneyRealizeHandler
-
 }

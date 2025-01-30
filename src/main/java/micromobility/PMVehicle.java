@@ -1,30 +1,35 @@
 package micromobility;
 
 import data.GeographicPoint;
+import data.StationID;
+import data.UserAccount;
 import data.VehicleID;
 
 /**
  * Classe que representa un vehicle PMV amb informació sobre el seu estat i ubicació.
  */
 public class PMVehicle {
-    private VehicleID vehicleID; // Identificador únic del vehicle
+    private final VehicleID vehicleID; // Identificador únic del vehicle
     private PMVState state; // Estat actual del vehicle
     private GeographicPoint location; // Ubicació actual del vehicle
+    private StationID stationID;
+    private UserAccount user;
 
     /**
      * Constructor de PMVehicle.
      * @param vehicleID Identificador del vehicle. No pot ser nul.
-     * @param initialState Estat inicial del vehicle. No pot ser nul.
      * @param initialLocation Ubicació inicial del vehicle. No pot ser nul·la.
      * @throws IllegalArgumentException si algun dels paràmetres és nul.
      */
-    public PMVehicle(VehicleID vehicleID, PMVState initialState, GeographicPoint initialLocation) {
-        if (vehicleID == null || initialState == null || initialLocation == null) {
-            throw new IllegalArgumentException("VehicleID, estat i ubicació no poden ser nuls.");
+    public PMVehicle(VehicleID vehicleID, GeographicPoint initialLocation, StationID stationID, UserAccount user) {
+        if (vehicleID == null || initialLocation == null) {
+            throw new IllegalArgumentException("VehicleID estat i ubicació no poden ser nuls.");
         }
         this.vehicleID = vehicleID;
-        this.state = initialState;
         this.location = initialLocation;
+        this.stationID = stationID;
+        this.state =PMVState.Available;
+        this.user = user;
     }
 
     /**
@@ -60,6 +65,19 @@ public class PMVehicle {
         this.location = newLocation;
     }
 
+    public void setState(PMVState state) {
+        this.state = state;
+    }
+
+    public void setStationID(StationID stationID) {
+        this.stationID = stationID;
+    }
+
+    public void setUser(UserAccount user) {
+        this.user = user;
+    }
+
+
     /**
      * Retorna l'identificador del vehicle.
      * @return VehicleID del vehicle.
@@ -83,4 +101,10 @@ public class PMVehicle {
     public GeographicPoint getLocation() {
         return location;
     }
+
+    public StationID getStationID(){
+        return stationID;
+    }
+
+    public UserAccount getUser(){return user;}
 }

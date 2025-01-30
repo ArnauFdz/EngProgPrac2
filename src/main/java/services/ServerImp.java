@@ -56,10 +56,6 @@ public class ServerImp implements Server {
             throw new InvalidPairingArgsException("Arguments no vàlids per registrar l'aparellament.");
         }
 
-        if (!isValidLocation(st, loc)) {
-            throw new InvalidPairingArgsException("Ubicació no vàlida per a l'estació indicada.");
-        }
-
         if (!availableVehicles.contains(veh)) {
             throw new InvalidPairingArgsException("El vehicle no es troba disponible per emparellar.");
         }
@@ -68,8 +64,8 @@ public class ServerImp implements Server {
         ServiceID serviceID = new ServiceID("SRV_" + veh.getId() + "_" + date.toLocalTime().toSecondOfDay());
 
         // Crear una nova instància de JourneyService
-        JourneyService journey = new JourneyService(serviceID, user, veh, st);
-        journey.setServiceInit(); // Iniciar el servei
+        JourneyService journey = new JourneyService( user, veh);
+        journey.setServiceInit(st, loc); // Iniciar el servei
 
         // Emmagatzemar el viatge a la base de dades simulada
         simulatedDatabase.put(veh, journey);
@@ -78,19 +74,6 @@ public class ServerImp implements Server {
         availableVehicles.remove(veh);
 
         System.out.println("SimulatedServer: registerPairing executat per VehicleID: " + veh.getId());
-    }
-    // Mètode auxiliar per validar la ubicació
-    private boolean isValidLocation(StationID station, GeographicPoint providedLocation) {
-        if (station == null || providedLocation == null) {
-            return false; // Si qualsevol dels paràmetres és nul, la ubicació no és vàlida
-        }
-
-        // Obtenir la ubicació registrada per a l'estació
-        GeographicPoint expectedLocation = station.getUbicacio();
-
-        // Comprovar si la ubicació proporcionada coincideix exactament amb la registrada
-        return expectedLocation.getLatitude() == providedLocation.getLatitude() &&
-                expectedLocation.getLongitude() == providedLocation.getLongitude();
     }
 
 
@@ -117,7 +100,7 @@ public class ServerImp implements Server {
 
         // Actualitzar la informació del viatge
         journey.setEndStation(st); // Assignar l'estació de finalització
-        journey.setServiceFinish(); // Finalitzar el server
+        journey.setServiceFinish(st, loc, date, dist,avSp,dur,imp); // Finalitzar el server
 
         // Marcar el vehicle com disponible
         availableVehicles.add(veh);
@@ -138,8 +121,8 @@ public class ServerImp implements Server {
         ServiceID serviceID = new ServiceID("SRV_" + veh.getId() + "_" + date.toLocalTime().toSecondOfDay());
 
         // Crear una instància de JourneyService
-        JourneyService journey = new JourneyService(serviceID, user, veh, st);
-        journey.setServiceInit(); // Iniciar el servei
+        JourneyService journey = new JourneyService( user, veh);
+        journey.setServiceInit(st,loc); // Iniciar el servei
 
         // Guardar l'emparellament al servidor
         simulatedDatabase.put(veh, journey);
@@ -157,7 +140,7 @@ public class ServerImp implements Server {
     public void unPairRegisterService(JourneyService s) throws PairingNotFoundException {
         if (s == null || !s.isActive()) {
             throw new PairingNotFoundException("No s'ha trobat informació associada al servei proporcionat.");
-        }
+        }f
 
         VehicleID vehicleID = s.getVehicle();
         System.out.println("VehicleID from JourneyService: " + vehicleID);
