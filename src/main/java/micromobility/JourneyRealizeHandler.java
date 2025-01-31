@@ -6,6 +6,7 @@ import services.*;
 import micromobility.payment.*;
 import services.smartfeatures.ArduinoMicroController;
 import services.smartfeatures.QRDecoder;
+import services.smartfeatures.UnbondedBTSignal;
 
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
@@ -17,29 +18,86 @@ import java.time.LocalDateTime;
  * Classe que gestiona la lògica d'un viatge utilitzant un vehicle PMV.
  */
 public class JourneyRealizeHandler {
-    private final Server server;
-    private final QRDecoder qrDecoder;
-    private final ArduinoMicroController microController;
-    private boolean isDriving; // Estat intern per verificar si està en conducció
-    private final Wallet wallet;
+    private Server server;
+    private QRDecoder qrDecoder;
+    private ArduinoMicroController microController;
+    private Wallet wallet;
+    private JourneyService journey;
+    private UnbondedBTSignal btSignal;
+    private PMVehicle veh;
+    private StationID st;
+    private UserAccount user;
 
-    private final JourneyService journey;
-
-    public JourneyRealizeHandler(Server server, QRDecoder qrDecoder, ArduinoMicroController microController, Wallet wallet, JourneyService journey) {
-        if (server == null || qrDecoder == null || microController == null || wallet == null) {
+    public JourneyRealizeHandler(Server server, QRDecoder qrDecoder, ArduinoMicroController microController, UnbondedBTSignal btSignal) {
+        if (server == null || qrDecoder == null || microController == null || btSignal == null) {
             throw new IllegalArgumentException("Les dependències no poden ser nul·les.");
         }
         this.server = server;
         this.qrDecoder = qrDecoder;
         this.microController = microController;
-        this.wallet = wallet;
-        this.isDriving = false; // Inicialització de l'estat
-        this.journey = journey;
+        this.btSignal = btSignal;
     }
 
-    public boolean isDriving() {
-        return isDriving;
+    //Setters
+
+    public void setWallet(Wallet wallet){
+        this.wallet = wallet;
     }
+
+    public void setServer(Server server){
+        this.server = server;
+    }
+
+    public void setQrDecoder(QRDecoder qrDecoder){
+        this.qrDecoder = qrDecoder;
+    }
+
+    public void setBtSignal(UnbondedBTSignal btSignal){
+        this.btSignal = btSignal;
+    }
+
+    public void setMicroController(ArduinoMicroController microController){
+        this.microController = microController;
+    }
+
+    //Getters
+
+    public Server getServer() {
+        return server;
+    }
+
+    public QRDecoder getQrDecoder() {
+        return qrDecoder;
+    }
+
+    public ArduinoMicroController getMicroController() {
+        return microController;
+    }
+
+    public Wallet getWallet() {
+        return wallet;
+    }
+
+    public JourneyService getJourney() {
+        return journey;
+    }
+
+    public UnbondedBTSignal getBtSignal() {
+        return btSignal;
+    }
+
+    public PMVehicle getVeh() {
+        return veh;
+    }
+
+    public StationID getSt() {
+        return st;
+    }
+
+    public UserAccount getUser() {
+        return user;
+    }
+
 
     public void scanQR(BufferedImage qrImage)
             throws ConnectException, InvalidPairingArgsException, CorruptedImgException, PMVNotAvailException, ProceduralException {
@@ -47,8 +105,20 @@ public class JourneyRealizeHandler {
             throw new ProceduralException("La imatge QR no pot ser nul·la.");
         }
 
+        GeographicPoint loc = new GeographicPoint(1f, 1f);
         VehicleID vehicleID = qrDecoder.getVehicleID(qrImage);
-        server.checkPMVAvail(vehicleID);
+        if(PMVState.Available.name().equals(server.checkPMVAvail(vehicleID))){
+            throw new PMVNotAvailException("Vehicle no disponible");
+        }
+
+        journey = new JourneyService(user, vehicleID);
+        journey.setServiceInit(st, loc);
+
+        veh = new PMVehicle(vehicleID, loc, st, user);
+        veh.setNotAvailb();
+        server.registerLocation(vehicleID, st);
+        server.registerPairing(user,vehicleID,st,loc,journey.getStartTime());
+        microController.setBTconnection(this);
     }
 
     public void unPairVehicle(JourneyService journeyService)
@@ -56,7 +126,8 @@ public class JourneyRealizeHandler {
         if (journeyService == null || !journeyService.isActive()) {
             throw new ProceduralException("El servei d'aparellament no està inicialitzat o actiu.");
         }
-        server.unPairRegisterService(journeyService);
+        GeographicPoint endLoc = new GeographicPoint(10f, 10f);
+        journey.setServiceFinish(st, endLoc, LocalDateTime.now(),100.0,3.5f, 40, new BigDecimal("3.7"));
     }
 
     public void broadcastStationID(StationID stationID) throws ConnectException {

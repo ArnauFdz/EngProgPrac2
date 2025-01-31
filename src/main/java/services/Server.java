@@ -18,11 +18,13 @@ import java.time.LocalDateTime;
 public interface Server {
     /**
      * Verifica si un vehicle està disponible.
+     *
      * @param vhID Identificador del vehicle.
+     * @return
      * @throws PMVNotAvailException si el vehicle no està disponible.
-     * @throws ConnectException si hi ha un error de connexió.
+     * @throws ConnectException     si hi ha un error de connexió.
      */
-    void checkPMVAvail(VehicleID vhID) throws PMVNotAvailException, ConnectException;
+    Object checkPMVAvail(VehicleID vhID) throws PMVNotAvailException, ConnectException;
 
     /**
      * Registra un aparellament entre un usuari i un vehicle.

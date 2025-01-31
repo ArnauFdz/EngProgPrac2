@@ -38,13 +38,14 @@ public class ServerImp implements Server {
         availableVehicles.addAll(vehicles);
     }
     @Override
-    public void checkPMVAvail(VehicleID vhID) throws PMVNotAvailException, ConnectException {
+    public Object checkPMVAvail(VehicleID vhID) throws PMVNotAvailException, ConnectException {
 
         if (!availableVehicles.contains(vhID)) {
             throw new PMVNotAvailException("El vehicle no està disponible.");
         }
 
         System.out.println("SimulatedServer: checkPMVAvail executat per VehicleID: " + vhID.getId());
+        return null;
     }
 
     @Override
@@ -140,7 +141,7 @@ public class ServerImp implements Server {
     public void unPairRegisterService(JourneyService s) throws PairingNotFoundException {
         if (s == null || !s.isActive()) {
             throw new PairingNotFoundException("No s'ha trobat informació associada al servei proporcionat.");
-        }f
+        }
 
         VehicleID vehicleID = s.getVehicle();
         System.out.println("VehicleID from JourneyService: " + vehicleID);
