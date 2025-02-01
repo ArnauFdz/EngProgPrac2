@@ -54,7 +54,7 @@ public interface Server {
      * @throws ConnectException si hi ha un error de connexió.
      */
     void stopPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc,
-                     LocalDateTime date, float avSp, float dist, int dur, BigDecimal imp)
+                     LocalDateTime date, float avSp, double dist, int dur, BigDecimal imp)
             throws InvalidPairingArgsException, ConnectException;
 
     void setPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date);
@@ -62,4 +62,6 @@ public interface Server {
     void unPairRegisterService(JourneyService s) throws PairingNotFoundException;
 
     void registerLocation(VehicleID veh, StationID st);
+
+    void registerPayment(ServiceID servID, UserAccount user, BigDecimal imp, char payMeth) throws ConnectException;
 }

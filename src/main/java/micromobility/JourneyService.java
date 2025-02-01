@@ -163,4 +163,7 @@ public class JourneyService {
         this.cost = cost;
     }
 
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 }

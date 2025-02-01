@@ -80,7 +80,7 @@ public class ServerImp implements Server {
 
     @Override
     public void stopPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date,
-                            float avSp, float dist, int dur, BigDecimal imp)
+                            float avSp, double dist, int dur, BigDecimal imp)
             throws InvalidPairingArgsException, ConnectException {
 
 
@@ -193,6 +193,7 @@ public class ServerImp implements Server {
         return new HashSet<>(availableVehicles); // Retorna una còpia per fer el test
     }
 
+    @Override
     public void registerPayment(ServiceID servID, UserAccount user, BigDecimal imp, char payMeth) throws ConnectException {
         if (servID == null || user == null || imp == null) {
             throw new IllegalArgumentException("Els paràmetres no poden ser nuls.");

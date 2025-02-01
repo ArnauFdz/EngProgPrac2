@@ -8,6 +8,7 @@ import services.smartfeatures.ArduinoMicroController;
 import services.smartfeatures.QRDecoder;
 import services.smartfeatures.UnbondedBTSignal;
 
+import javax.xml.crypto.Data;
 import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.net.ConnectException;
@@ -127,78 +128,68 @@ public class JourneyRealizeHandler {
             throw new ProceduralException("El servei d'aparellament no està inicialitzat o actiu.");
         }
         GeographicPoint endLoc = new GeographicPoint(10f, 10f);
-        journey.setServiceFinish(st, endLoc, LocalDateTime.now(),100.0,3.5f, 40, new BigDecimal("3.7"));
+        LocalDateTime endDat = LocalDateTime.now();
+        journey.setServiceFinish(st, endLoc, endDat,100.0,3.5f, 40, new BigDecimal("3.7"));
+        calculateValues(endLoc, endDat);
+        calculateImport(journey.getDistance(), journey.getDuration(), journey.getAverageSpeed(), new BigDecimal("2.1"),new BigDecimal("2.2"));
+        server.stopPairing(user, journey.getVehicle(),journey.getEndStation(),endLoc,endDat,journey.getAverageSpeed(),journey.getDistance(),journey.getDuration(),journey.getCost());
+        journey.setActive(false);
+        veh.setAvailb();
+        veh.setLocation(endLoc);
+        veh.setStationID(st);
+        veh.setUser(null);
+        server.registerLocation(veh.getVehicleID(), st);
+        microController.undoBTconnection();
     }
 
     public void broadcastStationID(StationID stationID) throws ConnectException {
         if (stationID == null) {
-            throw new IllegalArgumentException("StationID no pot ser nul.");
+            throw new ConnectException("StationID no pot ser nul.");
         }
-        server.registerLocation(null, stationID);
-        System.out.printf("Broadcast de l'estació rebut: %s%n", stationID.getId());
+        if (st == null) {
+            st = stationID;
+        } else if (journey != null) {
+            journey.setEndStation(stationID);
+            st = stationID;
+        }
     }
 
     public void startDriving() throws ConnectException, ProceduralException {
-        if (isDriving) {
-            throw new ProceduralException("El vehicle ja està en conducció.");
+        if (journey == null) {
+            throw new ProceduralException("No hi ha trajecte associat");
         }
-        try {
-            microController.startDriving();
-            isDriving = true;
-        } catch (PMVPhisicalException e) {
-            throw new RuntimeException("Error físic al vehicle: " + e.getMessage(), e);
+        if(veh == null){
+            throw new ProceduralException("No hi ha vehicle associat");
         }
+        veh.setUnderWay();
+        journey.setActive(true);
     }
 
     public void stopDriving() throws ConnectException, ProceduralException {
-        if (!isDriving) {
+        if (journey == null || !journey.isActive()) {
             throw new ProceduralException("No es pot aturar el vehicle perquè no està en conducció.");
         }
         try {
             microController.stopDriving();
-            isDriving = false;
         } catch (PMVPhisicalException e) {
             throw new RuntimeException("Error físic al vehicle: " + e.getMessage(), e);
         }
     }
 
-    public BigDecimal calculateImport(float distance, int duration, float avgSpeed, BigDecimal costPerKm, BigDecimal costPerMinute) {
-        if (distance <= 0 || duration <= 0 || avgSpeed <= 0 || costPerKm.compareTo(BigDecimal.ZERO) <= 0 || costPerMinute.compareTo(BigDecimal.ZERO) <= 0) {
+    public BigDecimal calculateImport(BigDecimal costPerKm, BigDecimal costPerMinute) {
+        if ( costPerKm.compareTo(BigDecimal.ZERO) <= 0 || costPerMinute.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Els paràmetres del càlcul han de ser positius.");
         }
 
-        BigDecimal distanceCost = BigDecimal.valueOf(distance).multiply(costPerKm);
-        BigDecimal timeCost = BigDecimal.valueOf(duration).multiply(costPerMinute);
-        return distanceCost.add(timeCost);
+        BigDecimal costDis = BigDecimal.valueOf(journey.getDistance()).multiply(costPerKm);
+        BigDecimal costTem = BigDecimal.valueOf(journey.getDuration()).multiply(costPerMinute);
+
+
+
+        return (costDis.add(costTem));
     }
 
-    public double[] calculateValues(GeographicPoint endLocation, LocalDateTime endTime) {
-        if (endLocation == null || endTime == null) {
-            throw new IllegalArgumentException("Els valors inicials i finals no poden ser nuls.");
-        }
-
-        // Càlcul de la duració en segons
-        long durationInSeconds = Duration.between(journey.getStartTime(), endTime).getSeconds();
-        if (durationInSeconds <= 0) {
-            throw new IllegalArgumentException("La duració ha de ser positiva.");
-        }
-
-        // Càlcul de la distància en quilòmetres
-        double deltaLat = endLocation.getLatitude() - journey.getStartStation().ubicacio.getLatitude();
-        double deltaLon = endLocation.getLongitude() - journey.getStartStation().ubicacio.getLongitude();
-        double distanceInKm = Math.sqrt(deltaLat * deltaLat + deltaLon * deltaLon) * 111; // 1 grau ≈ 111 km
-
-        // Càlcul de la velocitat mitjana
-        double durationInHours = durationInSeconds / 3600.0;
-        double averageSpeed = distanceInKm / durationInHours;
-
-        // Retornem els valors com un array
-        return new double[]{distanceInKm, durationInSeconds / 60.0, averageSpeed}; // Distància (km), duració (minuts), velocitat (km/h)
-    }
-
-
-
-    public void selectPaymentMethod(char opt) throws ProceduralException {
+    public void selectPaymentMethod(char opt) throws ProceduralException, NotEnoughWalletException, ConnectException {
         // Comprovar si el mètode seleccionat és vàlid
         if (opt != 'C' && opt != 'D' && opt != 'W' && opt != 'P') {
             throw new ProceduralException("Mètode de pagament no vàlid.");
@@ -214,6 +205,10 @@ public class JourneyRealizeHandler {
                 break;
             case 'W':
                 System.out.println("Pagament seleccionat: Wallet.");
+                WalletPayment walletPayment = new WalletPayment(journey, journey.getCost());
+                walletPayment.executePayment();
+                journey.setPayment(walletPayment);
+                server.registerPayment(journey.getServiceID(),user,journey.getCost(),opt);
                 break;
             case 'P':
                 System.out.println("Pagament seleccionat: PayPal.");
@@ -222,16 +217,4 @@ public class JourneyRealizeHandler {
 
         System.out.println("Mètode de pagament processat correctament: " + opt);
     }
-
-
-
-    // Operació interna per realitzar el pagament
-    protected void realizePayment(BigDecimal imp) throws NotEnoughWalletException {//protected perque es pugui accedir desde test
-        if (imp.compareTo(wallet.getBalance()) > 0) {
-            throw new NotEnoughWalletException("Saldo insuficient al moneder.");
-        }
-        wallet.subBalance(imp);
-        System.out.println("Pagament completat: " + imp + " € deduïts del moneder.");
-    }
-
 }
