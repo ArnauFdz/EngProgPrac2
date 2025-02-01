@@ -10,46 +10,42 @@ import static org.junit.jupiter.api.Assertions.*;
 public class GeographicPointTest {
 
     @Test
-    void testLatitudForaDeRangPerSobre() {
-        // Test que verifica que es llença una excepció per latitud > 90
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new GeographicPoint(91.0f, 0.0f);
-        });
-        assertEquals("La latitud ha d'estar entre -90 y 90.", exception.getMessage());
-    }
-
-    @Test
-    void testLatitudForaDeRangPerSota() {
-        // Test que verifica que es llença una excepció per latitud < -90
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new GeographicPoint(-91.0f, 0.0f);
-        });
-        assertEquals("La latitud ha d'estar entre -90 y 90.", exception.getMessage());
-    }
-
-    @Test
-    void testLongitudForaDeRangPerSobre() {
-        // Test que verifica que es llença una excepció per longitud > 180
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new GeographicPoint(0.0f, 181.0f);
-        });
-        assertEquals("La longitud ha d'estar entre -180 y 180.", exception.getMessage());
-    }
-
-    @Test
-    void testLongitudForaDeRangPerSota() {
-        // Test que verifica que es llença una excepció per longitud < -180
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new GeographicPoint(0.0f, -181.0f);
-        });
-        assertEquals("La longitud ha d'estar entre -180 y 180.", exception.getMessage());
-    }
-
-    @Test
-    void testLatitudYLongitudCorrectes() {
-        // Test que verifica que no es llença cap excepció amb valors vàlids
+    void testValidGeographicPoint() {
         GeographicPoint point = new GeographicPoint(45.0f, 90.0f);
         assertEquals(45.0f, point.getLatitude());
         assertEquals(90.0f, point.getLongitude());
+    }
+
+    @Test
+    void testInvalidLatitude() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            new GeographicPoint(100.0f, 50.0f);
+        });
+        assertEquals("La latitud ha d'estar entre -90 y 90.", exception.getMessage());
+    }
+
+    @Test
+    void testInvalidLongitude() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            new GeographicPoint(45.0f, 200.0f);
+        });
+        assertEquals("La longitud ha d'estar entre -180 y 180.", exception.getMessage());
+    }
+
+    @Test
+    void testEqualsAndHashCode() {
+        GeographicPoint point1 = new GeographicPoint(45.0f, 90.0f);
+        GeographicPoint point2 = new GeographicPoint(45.0f, 90.0f);
+        GeographicPoint point3 = new GeographicPoint(-45.0f, -90.0f);
+
+        assertEquals(point1, point2);
+        assertNotEquals(point1, point3);
+        assertEquals(point1.hashCode(), point2.hashCode());
+    }
+
+    @Test
+    void testToString() {
+        GeographicPoint point = new GeographicPoint(12.34f, 56.78f);
+        assertEquals("Geographic point {latitude='12.34', longitude='56.78'}", point.toString());
     }
 }

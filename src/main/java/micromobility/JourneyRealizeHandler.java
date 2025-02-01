@@ -28,6 +28,7 @@ public class JourneyRealizeHandler {
     private PMVehicle veh;
     private StationID st;
     private UserAccount user;
+    private static final double EARTH_RADIUS_KM = 6371.0;
 
     public JourneyRealizeHandler(Server server, QRDecoder qrDecoder, ArduinoMicroController microController, UnbondedBTSignal btSignal) {
         if (server == null || qrDecoder == null || microController == null || btSignal == null) {
@@ -37,6 +38,10 @@ public class JourneyRealizeHandler {
         this.qrDecoder = qrDecoder;
         this.microController = microController;
         this.btSignal = btSignal;
+    }
+
+    public JourneyRealizeHandler(){
+
     }
 
     //Setters
@@ -131,7 +136,7 @@ public class JourneyRealizeHandler {
         LocalDateTime endDat = LocalDateTime.now();
         journey.setServiceFinish(st, endLoc, endDat,100.0,3.5f, 40, new BigDecimal("3.7"));
         calculateValues(endLoc, endDat);
-        calculateImport(journey.getDistance(), journey.getDuration(), journey.getAverageSpeed(), new BigDecimal("2.1"),new BigDecimal("2.2"));
+        calculateImport(new BigDecimal("1.0"), new BigDecimal("1.0"));
         server.stopPairing(user, journey.getVehicle(),journey.getEndStation(),endLoc,endDat,journey.getAverageSpeed(),journey.getDistance(),journey.getDuration(),journey.getCost());
         journey.setActive(false);
         veh.setAvailb();
@@ -216,5 +221,28 @@ public class JourneyRealizeHandler {
         }
 
         System.out.println("Mètode de pagament processat correctament: " + opt);
+    }
+
+    private void calculateValues(GeographicPoint loc, LocalDateTime date) {
+
+        double distance = calculateDistance(journey.getStartLocation().getLatitude(), journey.getStartLocation().getLongitude(), loc.getLatitude(), loc.getLongitude());
+        int duration = date.getMinute() - journey.getStartTime().getMinute();
+        float avgSpeed = (float) distance / (duration == 0 ? 1 : duration);
+        journey.setDistance(distance);
+        journey.setAverageSpeed(avgSpeed);
+        journey.setDuration(duration);
+    }
+
+    public static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return EARTH_RADIUS_KM * c;
     }
 }

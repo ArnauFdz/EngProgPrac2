@@ -20,4 +20,5 @@ public interface UnbondedBTSignal {
      * @throws ConnectException en cas que es produeixin fallades associades a la connexió Bluetooth.
      */
     void BTbroadcast() throws ConnectException;
+    void setOn(Boolean on);
 }

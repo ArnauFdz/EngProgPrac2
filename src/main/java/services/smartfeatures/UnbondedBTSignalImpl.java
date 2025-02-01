@@ -2,6 +2,8 @@ package services.smartfeatures;
 
 import java.net.ConnectException;
 import java.util.concurrent.TimeUnit;
+
+import data.StationID;
 import micromobility.*; // Exemples de dependències necessàries
 
 
@@ -10,23 +12,30 @@ import micromobility.*; // Exemples de dependències necessàries
  */
 public class UnbondedBTSignalImpl implements UnbondedBTSignal {
 
-    private final String stationID; // ID de l'estació a transmetre
+    private StationID stationID; // ID de l'estació a transmetre
     private final int broadcastInterval; // Interval en segons entre emissions
     private JourneyRealizeHandler handler;
+    private Boolean isOn;
 
-    public UnbondedBTSignalImpl(String stationID, int broadcastInterval, JourneyRealizeHandler handler) {
+    public UnbondedBTSignalImpl(StationID stationID, int broadcastInterval, JourneyRealizeHandler handler) {
         this.stationID = stationID;
         this.broadcastInterval = broadcastInterval;
         this.handler = handler;
+        this.isOn = true;
     }
 
     @Override
     public void BTbroadcast() throws ConnectException {
         try {
 
-            while (true) {
-                handler.broadcastStationID(stationID); //Error que es solucionara a posteriori en els canvis de JourneyRealizeHandler
-                TimeUnit.SECONDS.sleep(broadcastInterval); // Pausa entre emissions
+            if(isOn) {
+
+                while (true) {
+                    handler.broadcastStationID(stationID); //Error que es solucionara a posteriori en els canvis de JourneyRealizeHandler
+                    TimeUnit.SECONDS.sleep(broadcastInterval); // Pausa entre emissions
+                }
+            }else{
+                throw new ConnectException("No conectat");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt(); // Restaurar estat d'interrupció
@@ -34,5 +43,9 @@ public class UnbondedBTSignalImpl implements UnbondedBTSignal {
         } catch (Exception e) {
             throw new ConnectException("Error inesperat en la connexió Bluetooth.");
         }
+    }
+
+    public void setOn(Boolean on) {
+        isOn = on;
     }
 }

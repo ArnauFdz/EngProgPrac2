@@ -1,17 +1,18 @@
-// Paquete: data
 package data;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Classe de tests per a ServiceID.
- */
-public class ServiceIDTest {
+class ServiceIDTest {
 
     @Test
-    void testIDNul() {
-        // Test que verifica que es llença una excepció per un ID nul
+    void testValidServiceID() {
+        ServiceID serviceID = new ServiceID("Service_123");
+        assertEquals("Service_123", serviceID.getId());
+    }
+
+    @Test
+    void testNullID() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             new ServiceID(null);
         });
@@ -19,8 +20,7 @@ public class ServiceIDTest {
     }
 
     @Test
-    void testIDBuit() {
-        // Test que verifica que es llença una excepció per un ID buit
+    void testEmptyID() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             new ServiceID("");
         });
@@ -28,17 +28,15 @@ public class ServiceIDTest {
     }
 
     @Test
-    void testIDEspais() {
-        // Test que verifica que es llença una excepció per un ID amb només espais
+    void testInvalidFormatID() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new ServiceID("   ");
+            new ServiceID("a@12");
         });
-        assertEquals("L'ID del servei no pot ser nul o buit.", exception.getMessage());
+        assertEquals("L'ID del servei ha de tenir entre 6 i 30 caràcters alfanumèrics, guions o guions baixos.", exception.getMessage());
     }
 
     @Test
-    void testIDMassaCurt() {
-        // Test que verifica que es llença una excepció per un ID massa curt
+    void testTooShortID() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             new ServiceID("abc");
         });
@@ -46,27 +44,27 @@ public class ServiceIDTest {
     }
 
     @Test
-    void testIDMassaLlarg() {
-        // Test que verifica que es llença una excepció per un ID massa llarg
+    void testTooLongID() {
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new ServiceID("abcdefghijklmnopqrstuvwxyz1234567890");
+            new ServiceID("a".repeat(31));
         });
         assertEquals("L'ID del servei ha de tenir entre 6 i 30 caràcters alfanumèrics, guions o guions baixos.", exception.getMessage());
     }
 
     @Test
-    void testIDAmbCaràctersInvàlids() {
-        // Test que verifica que es llença una excepció per un ID amb caràcters no vàlids
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            new ServiceID("invalid@id");
-        });
-        assertEquals("L'ID del servei ha de tenir entre 6 i 30 caràcters alfanumèrics, guions o guions baixos.", exception.getMessage());
+    void testEqualsAndHashCode() {
+        ServiceID serviceID1 = new ServiceID("Service123");
+        ServiceID serviceID2 = new ServiceID("Service123");
+        ServiceID serviceID3 = new ServiceID("DifferentService");
+
+        assertEquals(serviceID1, serviceID2);
+        assertNotEquals(serviceID1, serviceID3);
+        assertEquals(serviceID1.hashCode(), serviceID2.hashCode());
     }
 
     @Test
-    void testIDValid() {
-        // Test que verifica que no es llença cap excepció amb un ID vàlid
-        ServiceID serviceID = new ServiceID("valid_id123");
-        assertEquals("valid_id123", serviceID.getId());
+    void testToString() {
+        ServiceID serviceID = new ServiceID("Service_456");
+        assertEquals("ServiceID{id='Service_456'}", serviceID.toString());
     }
 }

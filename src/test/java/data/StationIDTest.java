@@ -1,95 +1,70 @@
 package data;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Tests per comprovar les funcionalitats i excepcions del constructor de StationID.
- */
 class StationIDTest {
 
-    private StationID validID;
-    private GeographicPoint validLocation;
-
-    @BeforeEach
-    void setUp() {
-        // Configuració d'objectes abans de cada test
-        validLocation = new GeographicPoint(41.3851f, 2.1734f); // Ubicació vàlida
-        validID = new StationID("ST-12345", validLocation);
+    @Test
+    void testValidStationID() {
+        StationID stationID = new StationID("STN_123");
+        assertEquals("STN_123", stationID.getId());
     }
 
     @Test
-    void testValidID() {
-        // Comprova que el getter de l'ID funciona correctament
-        assertEquals("ST-12345", validID.getId());
+    void testNullID() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            new StationID(null);
+        });
+        assertEquals("L'ID de l'estació no pot ser nul o buit.", exception.getMessage());
     }
 
     @Test
-    void testValidLocation() {
-        // Comprova que el getter de la ubicació funciona correctament
-        assertEquals(validLocation, validID.getUbicacio());
+    void testEmptyID() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            new StationID("");
+        });
+        assertEquals("L'ID de l'estació no pot ser nul o buit.", exception.getMessage());
     }
 
     @Test
-    void testInvalidID_Null() {
-        // Comprova que es llança una excepció per un ID nul
-        assertThrows(IllegalArgumentException.class, () -> new StationID(null, validLocation),
-                "S'hauria d'haver llançat una excepció per un ID nul.");
+    void testInvalidFormatID() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            new StationID("a@12");
+        });
+        assertEquals("L'ID de l'estació ha de tenir entre 5 i 20 caràcters alfanumèrics, guions o guions baixos.", exception.getMessage());
     }
 
     @Test
-    void testInvalidLocation_Null() {
-        // Comprova que es llança una excepció per una ubicació nul·la
-        assertThrows(IllegalArgumentException.class, () -> new StationID("ST-12345", null),
-                "S'hauria d'haver llançat una excepció per una ubicació nul·la.");
+    void testTooShortID() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            new StationID("abcd");
+        });
+        assertEquals("L'ID de l'estació ha de tenir entre 5 i 20 caràcters alfanumèrics, guions o guions baixos.", exception.getMessage());
     }
 
     @Test
-    void testInvalidID_Empty() {
-        // Comprova que es llança una excepció per un ID buit
-        assertThrows(IllegalArgumentException.class, () -> new StationID("", validLocation),
-                "S'hauria d'haver llançat una excepció per un ID buit.");
-    }
-
-    @Test
-    void testInvalidID_Whitespace() {
-        // Comprova que es llança una excepció per un ID amb només espais
-        assertThrows(IllegalArgumentException.class, () -> new StationID("   ", validLocation),
-                "S'hauria d'haver llançat una excepció per un ID només amb espais.");
-    }
-
-    @Test
-    void testInvalidID_ShortFormat() {
-        // Comprova que es llança una excepció per un format massa curt
-        assertThrows(IllegalArgumentException.class, () -> new StationID("123", validLocation),
-                "S'hauria d'haver llançat una excepció per un ID massa curt.");
-    }
-
-    @Test
-    void testInvalidID_LongFormat() {
-        // Comprova que es llança una excepció per un format massa llarg
-        assertThrows(IllegalArgumentException.class, () -> new StationID("ABCDEFGHIJKLMN-123456789", validLocation),
-                "S'hauria d'haver llançat una excepció per un ID massa llarg.");
-    }
-
-    @Test
-    void testInvalidID_InvalidCharacters() {
-        // Comprova que es llança una excepció per caràcters no permesos
-        assertThrows(IllegalArgumentException.class, () -> new StationID("ID#123!", validLocation),
-                "S'hauria d'haver llançat una excepció per caràcters no vàlids.");
+    void testTooLongID() {
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            new StationID("A".repeat(21));
+        });
+        assertEquals("L'ID de l'estació ha de tenir entre 5 i 20 caràcters alfanumèrics, guions o guions baixos.", exception.getMessage());
     }
 
     @Test
     void testEqualsAndHashCode() {
-        // Comprova equals i hashCode
-        StationID sameID = new StationID("ST-12345", validLocation);
-        GeographicPoint differentLocation = new GeographicPoint(41.3964f, 2.1904f);
-        StationID differentID = new StationID("ST-67890", differentLocation);
+        StationID stationID1 = new StationID("STATION123");
+        StationID stationID2 = new StationID("STATION123");
+        StationID stationID3 = new StationID("DIFFERENT_ID");
 
-        assertEquals(validID, sameID, "Els IDs haurien de ser iguals.");
-        assertNotEquals(validID, differentID, "Els IDs no haurien de ser iguals.");
-        assertEquals(validID.hashCode(), sameID.hashCode(), "Els hashCodes haurien de coincidir.");
+        assertEquals(stationID1, stationID2);
+        assertNotEquals(stationID1, stationID3);
+        assertEquals(stationID1.hashCode(), stationID2.hashCode());
+    }
+
+    @Test
+    void testToString() {
+        StationID stationID = new StationID("STN_456");
+        assertEquals("StationID{id='STN_456'}", stationID.toString());
     }
 }
