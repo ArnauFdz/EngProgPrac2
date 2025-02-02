@@ -1,4 +1,4 @@
-package MicroControllerTest;
+package MicroControllerTest.Interface;
 
 import data.StationID;
 import micromobility.JourneyRealizeHandler;

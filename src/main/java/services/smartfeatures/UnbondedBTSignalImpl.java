@@ -26,13 +26,15 @@ public class UnbondedBTSignalImpl implements UnbondedBTSignal {
 
     @Override
     public void BTbroadcast() throws ConnectException {
+        int i =0;
         try {
 
             if(isOn) {
 
-                while (true) {
+                while (i<3) {
                     handler.broadcastStationID(stationID); //Error que es solucionara a posteriori en els canvis de JourneyRealizeHandler
                     TimeUnit.SECONDS.sleep(broadcastInterval); // Pausa entre emissions
+                    i++;
                 }
             }else{
                 throw new ConnectException("No conectat");

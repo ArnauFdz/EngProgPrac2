@@ -1,5 +1,6 @@
 package MicroControllerTest;
 
+import MicroControllerTest.Interface.InterfaceBroadcastTest;
 import data.StationID;
 import micromobility.JourneyRealizeHandler;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ public class MicrocontrollerTestFail implements InterfaceBroadcastTest {
     }
 
     @Test
+    @Override
     public void testConectionException() throws ConnectException{
         assertThrows(ConnectException.class, ()-> unbondedBTSignal.BTbroadcast());
     }
