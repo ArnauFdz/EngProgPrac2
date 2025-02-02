@@ -7,6 +7,7 @@ import micromobility.JourneyService;
 import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 /**
  * Interfície que defineix les operacions del servidor per gestionar vehicles i aparellaments.
@@ -56,6 +57,7 @@ public interface Server {
     void stopPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc,
                      LocalDateTime date, float avSp, double dist, int dur, BigDecimal imp)
             throws InvalidPairingArgsException, ConnectException;
+    void setAvailableVehicles(VehicleID vehicles);
 
     void setPairing(UserAccount user, VehicleID veh, StationID st, GeographicPoint loc, LocalDateTime date);
 

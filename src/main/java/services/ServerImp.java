@@ -33,9 +33,10 @@ public class ServerImp implements Server {
     public ServerImp() {
 
     }
-    public void setAvailableVehicles(Set<VehicleID> vehicles) {
+    @Override
+    public void setAvailableVehicles(VehicleID vehicles) {
         availableVehicles.clear();
-        availableVehicles.addAll(vehicles);
+        availableVehicles.add(vehicles);
     }
     @Override
     public Object checkPMVAvail(VehicleID vhID) throws PMVNotAvailException, ConnectException {
